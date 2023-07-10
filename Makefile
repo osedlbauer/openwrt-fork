@@ -108,6 +108,11 @@ $(BIN_DIR)/profiles.json: FORCE
 
 json_overview_image_info: $(BIN_DIR)/profiles.json
 
+json_sbom: FORCE
+	$(if $(CONFIG_JSON_SBOM), \
+		(cd $(BIN_DIR) && $(SCRIPT_DIR)/json_sbom.py . 2>&1 > SBOM.json) \
+	)
+
 checksum: FORCE
 	$(call sha256sums,$(BIN_DIR),$(CONFIG_BUILDBOT))
 
@@ -130,6 +135,7 @@ prepare: .config $(tools/stamp-compile) $(toolchain/stamp-compile)
 world: prepare $(target/stamp-compile) $(package/stamp-compile) $(package/stamp-install) $(target/stamp-install) FORCE
 	$(_SINGLE)$(SUBMAKE) -r package/index
 	$(_SINGLE)$(SUBMAKE) -r json_overview_image_info
+	$(_SINGLE)$(SUBMAKE) -r json_sbom
 	$(_SINGLE)$(SUBMAKE) -r checksum
 ifneq ($(CONFIG_CCACHE),)
 	$(STAGING_DIR_HOST)/bin/ccache -s
